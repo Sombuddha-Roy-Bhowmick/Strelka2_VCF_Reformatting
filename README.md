@@ -2,6 +2,7 @@
 Reformatting of the somatic and germline VCFs produced by Strelka2 variant caller.
 Since the allele frequency (AF) is not directly available in the VCF output. So, to extract such values from the Strelka2 VCF, the python scripts are available here to do so.
 For full instructions on how to interpret results, please visit the official github page of Strelka2. (https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md)
+Example VCFs as well as their reformatted (rf) versions have been provided in this repository.
 
 For Somatic SNVs:
 refCounts = Value of FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FOMRAT/AU).
