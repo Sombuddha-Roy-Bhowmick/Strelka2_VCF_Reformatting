@@ -15,5 +15,5 @@ tier1RefCounts = First comma-delimited value from FORMAT/TAR
 tier1AltCounts = First comma-delimited value from FORMAT/TIR
 Somatic allele freqeuncy is $tier1AltCounts / ($tier1AltCounts + $tier1RefCounts)
 
-In addition, the reformatting script for Strelka2 Germline calling is also provided here, along with an additional script for calculating Ti/Tv ratio, using multithreading option is also available here.
+In addition, the reformatting script for Strelka2 Germline VCF is also provided here, along with an additional script for calculating Ti/Tv ratio, using multithreading option.
 
