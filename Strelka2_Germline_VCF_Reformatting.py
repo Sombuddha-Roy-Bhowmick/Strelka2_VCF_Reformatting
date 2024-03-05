@@ -1,0 +1,82 @@
+import sys
+import pandas as pd
+import numpy as np
+fileName = sys.argv[1]
+df = pd.read_table(fileName, low_memory=False, comment='#',index_col=False, header=None)
+fileName=fileName.replace(".vcf", "")
+df.columns=["CHROM", "POS","ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT","TUMOR"]
+df = df[df['FILTER'].str.contains('PASS')]
+df_CIGAR= df[df['INFO'].str.contains("CIGAR")]
+df_SNVHPOL = df[df['INFO'].str.contains("SNVHPOL")]
+columns_to_drop = ["QUAL", "INFO"]
+df_CIGAR.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_SNVHPOL.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_CIGAR[["GT","GQ","GQX","DPI","AD","ADF","ADR","FT","PL"]] = df_CIGAR.TUMOR.str.split(":", expand = True)
+columns_to_drop = ["FORMAT", "TUMOR", "GQ", "GQX", "DPI", "ADF", "ADR", "FT", "PL"]
+df_CIGAR.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_CIGAR.insert(7, "RD", "")
+df_CIGAR.insert(8, "AD1", "")
+df_CIGAR[['RD','AD1']]=df_CIGAR.AD.str.split(",", expand=True)
+df_CIGAR['GT1'] = df_CIGAR.loc[:, 'GT']
+df_CIGAR["RD"]=pd.to_numeric(df_CIGAR["RD"])
+df_CIGAR["AD1"]=pd.to_numeric(df_CIGAR["AD1"])
+df_CIGAR.insert(9, "DP", "")
+df_CIGAR["DP"]=(((df_CIGAR["RD"]) + (df_CIGAR["AD1"]))) 
+df_CIGAR.insert(10, "AF", "")
+df_CIGAR["AF"]=((df_CIGAR["AD1"]) / (df_CIGAR["DP"])) 
+df_CIGAR["AF"]=(df_CIGAR["AF"]*100)
+df_CIGAR.insert(11, "RD1", "RD")
+df_CIGAR.insert(12, "AD2", "AD")
+df_CIGAR.insert(13, "GT2", "GT")
+df_CIGAR.insert(14, "DP1", "DP")
+df_CIGAR.insert(15, "AF1", "AF")
+df_CIGAR.insert(16, "AD4", "")
+df_CIGAR.insert(17, "GT4", "")
+df_CIGAR.insert(18, "DP4", "")
+df_CIGAR.insert(19, "AF4", "")
+df_CIGAR.insert(20, "FORMAT", "")
+df_CIGAR = df_CIGAR.astype(str)
+df_CIGAR["DP4"] = df_CIGAR[["DP1", "DP"]].apply("=".join, axis=1)
+df_CIGAR["RD4"] = df_CIGAR[["RD1", "RD"]].apply("=".join, axis=1)
+df_CIGAR["AD4"] = df_CIGAR[["AD2", "AD1"]].apply("=".join, axis=1)
+df_CIGAR["AF4"] = df_CIGAR[["AF1", "AF"]].apply("=".join, axis=1)
+df_CIGAR["GT4"] = df_CIGAR[["GT2", "GT1"]].apply("=".join, axis=1)
+df_CIGAR["FORMAT"]=df_CIGAR[["GT4", "DP4", "RD4", "AD4", "AF4"]].apply(";".join, axis=1)
+columns_to_drop = ["RD4", "AF4", "DP4", "GT4", "AD4", "AF1", "DP1", "GT2", "AD2", "RD1", "AF", "DP", "GT1", "GT", "AD1", "RD", "AD"]
+df_CIGAR.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_CIGAR.insert(6, "INFO", ".")
+df_SNVHPOL[["GT","GQ","GQX","DP", "DPF", "AD","ADF","ADR", "SB", "FT","PL"]] = df_SNVHPOL.TUMOR.str.split(":", expand = True)
+columns_to_drop = ["FORMAT", "TUMOR", "GQ", "GQX", "DPF", "ADF", "ADR", "SB", "FT", "PL"]
+df_SNVHPOL.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_SNVHPOL.insert(7, "RD", "")
+df_SNVHPOL.insert(8, "AD1", "")
+df_SNVHPOL[['RD','AD1']]=df_SNVHPOL.AD.str.split(",", expand=True)
+df_SNVHPOL['GT1'] = df_SNVHPOL.loc[:, 'GT']
+df_SNVHPOL["RD"]=pd.to_numeric(df_SNVHPOL["RD"])
+df_SNVHPOL["AD1"]=pd.to_numeric(df_SNVHPOL["AD1"])
+df_SNVHPOL["DP"]=(((df_SNVHPOL["RD"]) + (df_SNVHPOL["AD1"]))) 
+df_SNVHPOL.insert(10, "AF", "")
+df_SNVHPOL["AF"]=((df_SNVHPOL["AD1"]) / (df_SNVHPOL["DP"])) 
+df_SNVHPOL["AF"]=(df_SNVHPOL["AF"]*100)
+df_SNVHPOL.insert(11, "RD1", "RD")
+df_SNVHPOL.insert(12, "AD2", "AD")
+df_SNVHPOL.insert(13, "GT2", "GT")
+df_SNVHPOL.insert(14, "DP1", "DP")
+df_SNVHPOL.insert(15, "AF1", "AF")
+df_SNVHPOL.insert(16, "AD4", "")
+df_SNVHPOL.insert(17, "GT4", "")
+df_SNVHPOL.insert(18, "DP4", "")
+df_SNVHPOL.insert(19, "AF4", "")
+df_SNVHPOL.insert(20, "FORMAT", "")
+df_SNVHPOL = df_SNVHPOL.astype(str)
+df_SNVHPOL["DP4"] = df_SNVHPOL[["DP1", "DP"]].apply("=".join, axis=1)
+df_SNVHPOL["RD4"] = df_SNVHPOL[["RD1", "RD"]].apply("=".join, axis=1)
+df_SNVHPOL["AD4"] = df_SNVHPOL[["AD2", "AD1"]].apply("=".join, axis=1)
+df_SNVHPOL["AF4"] = df_SNVHPOL[["AF1", "AF"]].apply("=".join, axis=1)
+df_SNVHPOL["GT4"] = df_SNVHPOL[["GT2", "GT1"]].apply("=".join, axis=1)
+df_SNVHPOL["FORMAT"]=df_SNVHPOL[["GT4", "DP4", "RD4", "AD4", "AF4"]].apply(";".join, axis=1)
+columns_to_drop = ["RD4", "AF4", "DP4", "GT4", "AD4", "AF1", "DP1", "GT2", "AD2", "RD1", "AF", "DP", "GT1", "GT", "AD1", "RD", "AD"]
+df_SNVHPOL.drop(columns=columns_to_drop, axis=1, inplace=True)
+df_SNVHPOL.insert(6, "INFO", ".")
+df_FINAL = pd.concat([df_CIGAR,df_SNVHPOL])
+df_FINAL.to_csv("_".join([fileName,'rf.vcf']), header=None, index=None, sep='\t')
